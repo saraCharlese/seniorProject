@@ -1,0 +1,8 @@
+discord
+git+https://github.com/Pycord-Development/pycord
+discord-py-slash-command
+-U discord-py-interactions
+pymongo
+dsnpython
+discord.py?
+humanize
