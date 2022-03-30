@@ -12,7 +12,7 @@ intents = discord.Intents.default()
 intents.members = True
 
 # Start of afk command class
-class afkCog(commands.Cog):
+class testCog(commands.Cog):
 
   def __init__(self,client):
     self.client = client
@@ -20,52 +20,82 @@ class afkCog(commands.Cog):
   # Start of afk command
   @commands.command()
   async def afk(self, ctx, message = None):
-    current_nick = ctx.author.nick
-
-    # Saves users default name as their nick if they do not already have one
-    if current_nick == None:
-      current_nick = ctx.author.name
-
-    # Checks if user was previously AFK and is trying to run the command again
-    # If they were, it takes out the [AFK] and exits the command
-    if "[AFK]" in current_nick:
-      await ctx.send(f"{ctx.author.mention} is no longer AFK")
-      newNick = ctx.author.nick.replace('[AFK]', '')
-      await ctx.author.edit(nick=newNick)
-      return
-
-    # Checks if user entered a message after running (prefix)afk
-    if message == None:
-      message = None
-      await ctx.send(f"{ctx.author.mention} has gone afk.")
-    else:
-      # Prints more than the first word of the message a user enters if contains more than one word
-      message = ctx.message.content.split(' ', 1)[1]
-      await ctx.send(f"{ctx.author.mention} has gone afk {message}.")
-
     try:
-      await ctx.author.edit(nick = f"{ctx.author.name} [AFK]")
-    except:
-      await ctx.send("Unable to change your name")
+        # Variable will be true if user was afk previously, false if they weren't
+        afkCheck = getAfk(ctx.author.id)
+        
+        # If user wasnt afk
+        if not afkCheck:
+            # Checks if user entered a message after running (prefix)afk
+            if message == None:
+                message = None
+                await ctx.send(f"{ctx.author.mention} has gone afk.")
+            else:
+                # Prints more than the first word of the message a user enters if contains more than one word
+                message = ctx.message.content.split(' ', 1)[1]
+                await ctx.send(f"{ctx.author.mention} has gone afk `{message}`.")
+                
+            # Adds [AFK] to users name
+            current_nick = ctx.author.nick
+
+            if current_nick == None:
+                current_nick = ctx.author.nick
+
+            try:
+                await ctx.author.edit(nick = f"[AFK] {ctx.author.name}")
+            except:
+                await ctx.send("Unable to change your name")
+
+            # Adds user to afk list
+            afkOn(ctx.author.id,message)
+        else:
+            removeAfk(ctx.author.id)
+            newNick = ctx.author.nick.replace('[AFK]', '')
+            await ctx.author.edit(nick=newNick)
+            await ctx.send("you are not afk anymore")
+
+    except Exception:
+        await ctx.send(f"```{traceback.format_exc()}```")
 
   # Reads all messages from all users
   @commands.Cog.listener()
   async def on_message(self,message):
-    # Gets users nickname
-    userName = message.author.nick
+    # Ignores bots own messages
+    if message.author.id == self.client.user.id:
+        return
 
-    if userName != None:
-      # Checks if user has [AFK] in their name
-      if "[AFK]" in userName:
-        # Checks if user was trying to run the afk command again
-        if ";afk" in message.content:
-          pass
-        else:
-          # Takes out the [AFK] from the users name
-          newNick = message.author.nick.replace('[AFK]', '')
-          await message.author.edit(nick=newNick)
+    '''First Check if the author of the message was previously AFK
+       If they were, take them off the afk list'''
+    
+    afkCheck = getAfk(message.author.id)
 
-          await message.channel.send(f"{message.author.mention} is no longer AFK")
+    if afkCheck:
+        removeAfk(message.author.id)
+        await message.reply("You are not AFK anymore")
+        newNick = message.author.nick.replace('[AFK]', '')
+        await message.author.edit(nick=newNick)
+    
+    '''Then check if the message contains a reply or ping mention'''
+    mention = message.mentions
+
+    if mention:
+        # Loops through all users in the message 
+        for user in mention:
+            userID = user.id
+
+            # Checks if user that was pinged was AFK
+            afkCheck = getAfk(userID)
+
+            if afkCheck:
+                afkMessage = getMessage(userID)
+
+                # If the user didnt leave any message
+                if len(afkMessage) == 0:
+                    await message.reply(f"<@{userID}> is AFK")
+                else:
+                    await message.reply(f"<@{userID}> is AFK: {afkMessage}")
+
+
 
 # Function which adds users ID and message to json file
 def afkOn(userID,message):
@@ -87,21 +117,26 @@ def afkOn(userID,message):
         # Writes to file
         file.seek(0)
         json.dump(afkList, file)
-
+        
 # Function that returns users message if user is in AFK list else returns False
 def getAfk(userID):
+    # Converts userID from int to string
+    userID = str(userID)
+    
     with open("afk.json", mode='r+') as file:
         # Returns current file data as a dict
         afkList = json.load(file)
-
+        
         if userID in afkList:
-            return afkList[userID]
+            return True
         else: 
-            print(False)
             return False
 
-# Function that takes off the user from the AFK list
+# Function that takes off the user from the AFK list      
 def removeAfk(userID):
+    # Converts userID from int to string
+    userID = str(userID)
+    
     with open("afk.json", mode='r+') as file:
         # Returns current file data as a dict
         afkList = json.load(file)
@@ -113,11 +148,18 @@ def removeAfk(userID):
         # Writes dictionary back to file
         file.seek(0)
         json.dump(afkList, file)
-
+        
+def getMessage(userID):
+    userID = str(userID)
     
-
-
+    with open("afk.json", mode='r+') as file:
+        # Returns current file data as a dict
+        afkList = json.load(file)
+        
+        message = afkList[userID]
+        
+        return message
 
 
 def setup(client):
-  client.add_cog(afkCog(client))
+  client.add_cog(testCog(client))
