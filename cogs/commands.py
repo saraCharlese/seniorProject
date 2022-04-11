@@ -19,10 +19,11 @@ class commandslist(commands.Cog):
             "**!fix:** If you forget to clock out don't worry run this command in server and the bot will DM you asking which shift needs to be fixed, then send the manager on duty a request to either approve or deny.",
             "**!afk (optional message):** Tell your colleagues that you will be away from your keyboard and insert an optional message if you want! Just type in any channel and the afk will be removed.",
             "**!reminder:** Set a reminder for yourself, run the command in sever and the bot will DM you to ask what you want to be reminded of and ask for a time.",
-            "**!pomodoro:** A focus timer! Run this command in server and the bot will DM you to set up a focus task.",
+            "**!pomodoro:** A focus timer! Set a focus timer at 25 minute intervals and 5 minute breaks.",
+            "**!quitpomodoro:** Run this command to stop the focus timer."
             "**!weather:** Check the weather for a specific area.",
             "**__Game Commands: Have some fun!__**",
-            "**!flipcoin:** Flip a coin and choose heads or tails"]
+            "**!flipcoin:** Flip a coin and choose heads or tails."]
     Desc = '\n\n'.join(List)
     commandsEmbed = discord.Embed(title = "List of Commands", description = Desc ,color = 0x000FF)
     await ctx.send(embed=commandsEmbed)
