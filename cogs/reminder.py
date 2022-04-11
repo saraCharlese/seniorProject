@@ -1,4 +1,5 @@
 from datetime import datetime
+from http import client
 import time
 from discord.ext import commands
 from discord import DMChannel
@@ -10,26 +11,36 @@ class reminder(commands.Cog):
   def __init__(self,client):
     self.client = client
 
-  async def guild_null(slef, ctx):
+  async def guild_null(self, ctx):
     if ctx.guild == None:
       await ctx.send("this command does not work in DM's")
       return True
     return False
     
+      
+
   @commands.command(name='reminder')
   async def reminder(self, ctx):
     dm = await ctx.author.create_dm()
     if await self.guild_null(ctx):
       return
     
-
     def check(msg):
       return msg.author == ctx.author and msg.channel == dm
-    
 
     await dm.send("When would you like your reminder(in minutes?) ")
-    rt = await self.client.wait_for("message", check=check)
-    reminder_time = rt.content    
+    rt = await self.client.wait_for("message", check=check)    
+    while True:
+      try:
+          is_int = int(rt.content)
+          break
+      except:
+        await dm.send("Please set a new reminder using an integer as input for time!")
+        await dm.send("When would you like your reminder(in minutes?) ")
+        rt = await self.client.wait_for("message", check=check)
+      
+    
+    reminder_time = rt.content
     await dm.send("what would you like to be reminded of?")
     rc = await self.client.wait_for("message", check=check)
     reminder_content = rc.content
@@ -40,7 +51,7 @@ class reminder(commands.Cog):
     await dm.send(reminder_content)
     if await self.guild_null(ctx):
       return
-
+    
 
     
 
