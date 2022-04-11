@@ -12,7 +12,7 @@ intents = discord.Intents.default()
 intents.members = True
 
 # Start of afk command class
-class testCog(commands.Cog):
+class afk(commands.Cog):
 
   def __init__(self,client):
     self.client = client
@@ -29,11 +29,15 @@ class testCog(commands.Cog):
             # Checks if user entered a message after running (prefix)afk
             if message == None:
                 message = None
-                await ctx.send(f"{ctx.author.mention} has gone afk.")
+                #await ctx.send(f"{ctx.author.mention} has gone afk.")
+                afkEmbed = discord.Embed(description=f"{ctx.author.mention} has gone afk. ",color=0x000FF)
+                await ctx.send(embed=afkEmbed)
             else:
                 # Prints more than the first word of the message a user enters if contains more than one word
                 message = ctx.message.content.split(' ', 1)[1]
-                await ctx.send(f"{ctx.author.mention} has gone afk `{message}`.")
+                #await ctx.send(f"{ctx.author.mention} has gone afk `{message}`.")
+                afkEmbed2 = discord.Embed(description=f"{ctx.author.mention} has gone afk `{message}`.",color=0x000FF)
+                await ctx.send(embed=afkEmbed2)
                 
             # Adds [AFK] to users name
             current_nick = ctx.author.nick
@@ -44,7 +48,8 @@ class testCog(commands.Cog):
             try:
                 await ctx.author.edit(nick = f"[AFK] {ctx.author.name}")
             except:
-                await ctx.send("Unable to change your name")
+                #await ctx.send("Unable to change your name")
+                print("Unable to change user name")
 
             # Adds user to afk list
             afkOn(ctx.author.id,message)
@@ -52,7 +57,10 @@ class testCog(commands.Cog):
             removeAfk(ctx.author.id)
             newNick = ctx.author.nick.replace('[AFK]', '')
             await ctx.author.edit(nick=newNick)
-            await ctx.send("you are not afk anymore")
+            #await ctx.send("you are not afk anymore")
+            afkEmbed3 = discord.Embed(title="You are no longer AFK",color=0x000FF)
+            await ctx.send(embed=afkEmbed3)
+            
 
     except Exception:
         await ctx.send(f"```{traceback.format_exc()}```")
@@ -71,7 +79,9 @@ class testCog(commands.Cog):
 
     if afkCheck:
         removeAfk(message.author.id)
-        await message.reply("You are not AFK anymore")
+        #await message.reply("You are not AFK anymore")
+        afkEmbed4 = discord.Embed(title="You are no longer AFK",color=0x000FF)
+        await message.reply(embed=afkEmbed4)
         newNick = message.author.nick.replace('[AFK]', '')
         await message.author.edit(nick=newNick)
     
@@ -91,9 +101,13 @@ class testCog(commands.Cog):
 
                 # If the user didnt leave any message
                 if len(afkMessage) == 0:
-                    await message.reply(f"<@{userID}> is AFK")
+                    #await message.reply(f"<@{userID}> is AFK")
+                    afkEmbed5 = discord.Embed(description=f"<@{userID}> is AFK",color=0x000FF)
+                    await message.reply(embed=afkEmbed5)
                 else:
-                    await message.reply(f"<@{userID}> is AFK: {afkMessage}")
+                    #await message.reply(f"<@{userID}> is AFK: {afkMessage}")
+                    afkEmbed6 = discord.Embed(description=f"<@{userID}> is AFK: {afkMessage}",color=0x000FF)
+                    await message.reply(embed=afkEmbed6)
 
 
 
@@ -162,4 +176,4 @@ def getMessage(userID):
 
 
 def setup(client):
-  client.add_cog(testCog(client))
+  client.add_cog(afk(client))
